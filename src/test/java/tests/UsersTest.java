@@ -21,7 +21,7 @@ public class UsersTest implements TestConstants {
 
     @Test
     public void notFoundTest() {
-        new BaseAdapter().getError404("https://reqres.in/api/users/23");
+        Assert.assertEquals(new BaseAdapter().getCode(NOT_FOUND_URL), 404);
     }
 
     @Test

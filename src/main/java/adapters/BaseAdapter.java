@@ -6,33 +6,34 @@ import io.restassured.response.Response;
 import static io.restassured.RestAssured.given;
 
 public class BaseAdapter {
+    String BASE_URL = "https://reqres.in/api/";
 
     Gson converter = new Gson();
 
     public String get(String url) {
         return given()
                 .when()
-                .get(url)
+                .get(BASE_URL + url)
                 .then()
                 .log().all()
                 .statusCode(200)
                 .extract().body().asString();
     }
 
-    public void getError404(String url) {
-         given()
+    public int getCode(String url) {
+        return given()
                 .when()
-                .get(url)
+                .get(BASE_URL + url)
                 .then()
                 .log().all()
-                .statusCode(404);
+                .extract().statusCode();
     }
 
     public Response post(String url, String body) {
         return given()
                 .body(body)
                 .when()
-                .post(url)
+                .post(BASE_URL + url)
                 .then()
                 .log().all()
                 .statusCode(201)
@@ -45,7 +46,6 @@ public class BaseAdapter {
                 .when()
                 .put(url)
                 .then()
-                //.using()
                 .log().all()
                 .statusCode(200)
                 .extract().response();
