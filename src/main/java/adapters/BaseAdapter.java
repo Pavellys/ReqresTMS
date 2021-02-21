@@ -19,14 +19,6 @@ public class BaseAdapter {
                 .extract().response();
     }
 
-    public int getCode(String url) {
-        return given()
-                .when()
-                .get(BASE_URL + url)
-                .then()
-                .log().all()
-                .extract().statusCode();
-    }
 
     public Response post(String url, String body) {
         return  given()
