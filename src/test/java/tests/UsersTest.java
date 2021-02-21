@@ -1,73 +1,59 @@
 package tests;
 
+import adapters.BaseAdapter;
+import adapters.UsersAdapter;
 import com.google.gson.Gson;
-import objects.UsersList;
+import consntants.TestConstants;
+import io.restassured.response.Response;
+import objects.CreateUser;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import static io.restassured.RestAssured.given;
-
-public class UsersTest {
+public class UsersTest implements TestConstants {
+    Gson converter = new Gson();
 
     @Test
     public void listUsersTest() {
-        String body = given()
-                .when()
-                .get("https://reqres.in/api/users?page=2")
-                .then()
-                .log().all()
-                .statusCode(200)
-                .extract().body().asString();
-        UsersList list = new Gson().fromJson(body, UsersList.class);
-        Assert.assertEquals(list.getData().get(0).getId(), 7);
-        Assert.assertEquals(list.getData().get(2).getFirstName(), "Tobias");
-        Assert.assertEquals(list.getData().get(4).getLastName(), "Edwards");
+        Assert.assertEquals(new BaseAdapter().get(LIST_USERS_URL).asString(), LIST_USERS_EXP_RESULT);
     }
 
     @Test
     public void singleUserTest() {
-        given()
-                .when()
-                .get("https://reqres.in/api/users/2")
-                .then()
-                .log().body()
-                .statusCode(200);
+        Assert.assertEquals(new BaseAdapter().get(SINGLE_USER_URL).asString(), SINGE_USER_EXP_RESULT);
     }
 
     @Test
     public void notFoundTest() {
-        given()
-                .when()
-                .get("https://reqres.in/api/users/23")
-                .then()
-                .log().all()
-                .statusCode(404);
+        Assert.assertEquals(new BaseAdapter().get(NOT_FOUND_URL).getStatusCode(), 404);
     }
 
     @Test
     public void createUserTest() {
-        given().body("{\n" +
-                "    \"first_name\": \"morpheus\",\n" +
-                "    \"last_name\": \"leader\"\n" +
-                "}")
-                .when()
-                .post("https://reqres.in/api/users")
-                .then()
-                .log().all()
-                .statusCode(201);
+        CreateUser expectedResult = converter.fromJson("{\n" +
+                "    \"name\": \"morpheus\",\n" +
+                "    \"job\": \"leader\"\n" +
+                "}", CreateUser.class);
+        CreateUser addUser = CreateUser.builder()
+                .name("morpheus")
+                .job("leader")
+                .build();
+        Response crateUserFromResponse = new UsersAdapter().createUser(addUser);
+        CreateUser actualResult = converter.fromJson(crateUserFromResponse.asString(), CreateUser.class);
+        Assert.assertEquals(actualResult, expectedResult);
     }
 
     @Test
     public void updateUserTest(){
-        given().body("{\n" +
+        CreateUser expectedResult = converter.fromJson("{\n" +
                 "    \"name\": \"morpheus\",\n" +
                 "    \"job\": \"zion resident\"\n" +
-                "}")
-                .when()
-                .put("https://reqres.in/api/users/2")
-                .then()
-                .using()
-                .log().body()
-                .statusCode(200);
+                "}", CreateUser.class);
+        CreateUser updateUser = CreateUser.builder()
+                .name("morpheus")
+                .job("zion resident")
+                .build();
+        Response updateUserFromResponse = new UsersAdapter().updateUser(updateUser);
+        CreateUser actualResult = converter.fromJson(updateUserFromResponse.asString(), CreateUser.class);
+        Assert.assertEquals(actualResult, expectedResult);
     }
 }
